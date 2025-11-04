@@ -24,18 +24,18 @@ document.addEventListener("DOMContentLoaded", function () {
   document.documentElement.lang = langParam;
 
   // Add this to your main.js file
-  if ("serviceWorker" in navigator) {
-    window.addEventListener("load", function () {
-      navigator.serviceWorker
-        .register("/service-worker.js")
-        .then(function (registration) {
-          // console.log("ServiceWorker registration successful");
-        })
-        .catch(function (error) {
-          console.error("ServiceWorker registration failed: ", error);
-        });
-    });
-  }
+  //if ("serviceWorker" in navigator) {
+    //window.addEventListener("load", function () {
+      //navigator.serviceWorker
+        //.register("/service-worker.js")
+        //.then(function (registration) {
+          //// console.log("ServiceWorker registration successful");
+        //})
+        //.catch(function (error) {
+          //console.error("ServiceWorker registration failed: ", error);
+        //});
+    //});
+  //}
 
   // Load both the SVG and biases content in parallel
   Promise.all([
