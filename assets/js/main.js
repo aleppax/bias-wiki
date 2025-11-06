@@ -20,6 +20,8 @@ document.addEventListener("DOMContentLoaded", function () {
   const urlParams = new URLSearchParams(window.location.search);
   const langParam = urlParams.get("lang") || "en"; // Default to English
 
+  console.log(`Initial language detection: URL param=${urlParams.get("lang")}, using=${langParam}`);
+
   // Set document language
   document.documentElement.lang = langParam;
 
@@ -39,16 +41,23 @@ document.addEventListener("DOMContentLoaded", function () {
 
   // Load both the SVG and biases content in parallel
   Promise.all([
-    fetch(`assets/images/cognitive_bias_codex_${langParam}.svg`)
+    fetch(`assets/images/cognitive_bias_codex_${langParam}.svg?t=${Date.now()}`)
       .then((response) => {
         if (!response.ok) {
+          console.warn(`Language ${langParam} not found (status: ${response.status}), falling back to English`);
           // Fallback to English
           document.documentElement.lang = "en";
-          return fetch("assets/images/cognitive_bias_codex_en.svg");
+          return fetch(`assets/images/cognitive_bias_codex_en.svg?t=${Date.now()}`);
         }
         return response;
       })
-      .then((response) => response.text()),
+      .then((response) => response.text())
+      .catch((error) => {
+        console.error(`Error loading SVG for ${langParam}:`, error);
+        // Fallback to English on any error
+        document.documentElement.lang = "en";
+        return fetch(`assets/images/cognitive_bias_codex_en.svg?t=${Date.now()}`).then(response => response.text());
+      }),
     loadBiasesContent(),
   ])
     .then(([svgContent, loadedBiasesContent]) => {
@@ -114,13 +123,14 @@ function isMobileDevice() {
 
 // Function to initialize tooltips for biases
 function initializeTooltips(biasesContent) {
-  // Exit this function if we are not in English mode
-  if (document.documentElement.lang !== "en") {
-    return;
-  }
-
   // Check if we're on mobile or desktop
   const mobile = isMobileDevice();
+
+  // Exit tooltip initialization for non-English languages on desktop
+  // But allow mobile modal initialization for all languages
+  if (!mobile && document.documentElement.lang !== "en") {
+    return;
+  }
 
   // Get all bias elements
   const biasElements = document.querySelectorAll("svg a");
@@ -163,23 +173,20 @@ function initializeTooltips(biasesContent) {
   }
 
   biasElements.forEach((element) => {
-    // Get the bias name (using only English text)
+    // Get the bias name (works for any language)
     let biasName = "";
     const textElements = element.querySelectorAll("text");
     for (const textElement of textElements) {
-      if (!textElement.hasAttribute("systemLanguage")) {
-        biasName = textElement.textContent.trim();
-        break;
-      }
+      // Get the text content regardless of language
+      biasName = textElement.textContent.trim();
+      if (biasName) break;
     }
 
     if (!biasName) return;
 
     const wikipediaUrl = element.getAttribute("xlink:href");
     const biasData = findBiasContent(biasesContent, biasName);
-    const biasContent = biasData
-      ? biasData.content
-      : `<p>No detailed content available for ${biasName}.</p>`;
+    const biasContent = biasData.content;
 
     if (mobile) {
       // For mobile: Use modal
@@ -305,7 +312,11 @@ function findBiasContent(biasesContent, biasName) {
     }
   }
 
-  return null;
+  // For non-English languages, return a fallback message
+  return {
+    name: biasName,
+    content: `<p>Detailed content not available in this language. <a href="https://en.wikipedia.org/wiki/Cognitive_bias" target="_blank">Learn more about cognitive biases on Wikipedia</a>.</p>`
+  };
 }
 
 // Function to show modal on mobile
@@ -408,16 +419,22 @@ function changeLanguage(language) {
   svgContainer.innerHTML = "";
   svgContainer.appendChild(loadingIndicator);
 
-  // Fetch the SVG for the selected language
-  fetch(`assets/images/cognitive_bias_codex_${language}.svg`)
+  // Fetch the SVG for the selected language with cache busting
+  fetch(`assets/images/cognitive_bias_codex_${language}.svg?t=${Date.now()}`)
     .then((response) => {
       if (!response.ok) {
+        console.warn(`Language ${language} not found (status: ${response.status}), falling back to English`);
         // Fallback to English if the language version doesn't exist
-        return fetch("assets/images/cognitive_bias_codex_en.svg");
+        return fetch(`assets/images/cognitive_bias_codex_en.svg?t=${Date.now()}`);
       }
       return response;
     })
     .then((response) => response.text())
+    .catch((error) => {
+      console.error(`Error loading SVG for ${language}:`, error);
+      // Fallback to English on any error
+      return fetch(`assets/images/cognitive_bias_codex_en.svg?t=${Date.now()}`).then(response => response.text());
+    })
     .then((svgContent) => {
       // Remove loading indicator
       svgContainer.removeChild(loadingIndicator);
