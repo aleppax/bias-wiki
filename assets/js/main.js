@@ -96,7 +96,7 @@ window.addEventListener("popstate", function (event) {
     // If no state, check URL parameters
     const urlParams = new URLSearchParams(window.location.search);
     const langParam = urlParams.get("lang");
-    if (langParam && ["en", "pt", "ca", "eu", "fr", "uk"].includes(langParam)) {
+    if (langParam && ["en", "pt", "ca", "eu", "fr", "uk", "it"].includes(langParam)) {
       document.getElementById("language-selector").value = langParam;
       changeLanguage(langParam);
     }
@@ -371,7 +371,7 @@ function initializeLanguageSelector() {
   const langParam = urlParams.get("lang");
 
   // If language parameter exists in URL, use it
-  if (langParam && ["en", "pt", "ca", "eu", "fr", "uk"].includes(langParam)) {
+  if (langParam && ["en", "pt", "ca", "eu", "fr", "uk", "it"].includes(langParam)) {
     languageSelector.value = langParam;
     changeLanguage(langParam);
   }
