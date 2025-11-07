@@ -697,5 +697,35 @@ text-decoration: none;
 }
 
 .attribution a:hover {
-text-decoration: underline;
+  text-decoration: underline;
+}
+
+/* Share button styles */
+.share-section {
+  margin-top: 15px;
+  padding-top: 10px;
+  border-top: 1px solid #eee;
+  text-align: center;
+}
+
+.share-button {
+  background-color: #28a745;
+  color: white;
+  border: none;
+  padding: 8px 16px;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 12px;
+  font-weight: normal;
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+}
+
+.share-button:hover {
+  background-color: #218838;
+}
+
+.share-button:active {
+  background-color: #1e7e34;
 }

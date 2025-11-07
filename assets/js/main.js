@@ -16,11 +16,15 @@ document.addEventListener("DOMContentLoaded", function () {
     '<div class="spinner"></div><p>Loading Cognitive Bias Codex...</p>';
   document.getElementById("container").appendChild(loadingIndicator);
 
-  // Check URL parameters for language
+  // Check URL parameters for language and bias
   const urlParams = new URLSearchParams(window.location.search);
   const langParam = urlParams.get("lang") || "en"; // Default to English
+  const biasParam = urlParams.get("bias"); // Get bias parameter if present
 
   console.log(`Initial language detection: URL param=${urlParams.get("lang")}, using=${langParam}`);
+  if (biasParam) {
+    console.log(`Bias parameter detected: ${biasParam}`);
+  }
 
   // Set document language
   document.documentElement.lang = langParam;
@@ -84,6 +88,13 @@ document.addEventListener("DOMContentLoaded", function () {
       initializeLanguageSelector();
       initializeInfoPanel();
       initializePanZoom();
+
+      // If bias parameter is present, center and show that bias
+      if (biasParam) {
+        setTimeout(() => {
+          centerAndShowBias(biasParam, loadedBiasesContent);
+        }, 500); // Small delay to ensure everything is loaded
+      }
 
       if (isMobileDevice()) {
         initializeMobileView();
@@ -276,7 +287,7 @@ function initializeTooltips(biasesContent) {
         element.classList.add("highlighted");
         currentElement = element;
 
-        // Update tooltip content
+        // Update tooltip content with share button
         tooltip.innerHTML = `
             <div class="tooltip-arrow" data-popper-arrow></div>
             <div class="tooltip-content">
@@ -285,6 +296,11 @@ function initializeTooltips(biasesContent) {
               <div class="wiki-buttons">
                 <a href="${wikipediaUrl}" target="_blank" class="wiki-link">English Wikipedia</a>
                 ${biasData.wikipediaUrl ? `<a href="${biasData.wikipediaUrl}" target="_blank" class="wiki-link">Wikipedia Italiano</a>` : ''}
+              </div>
+              <div class="share-section">
+                <button class="share-button" onclick="copyBiasLink('${biasName.replace(/'/g, "\\'")}')" title="Copia link a questo bias">
+                  🔗 Condividi
+                </button>
               </div>
             </div>
           `;
@@ -1059,4 +1075,94 @@ function initializeModalTouchHandling() {
       { passive: true }
     );
   }
+}
+
+// Function to center and show a specific bias
+function centerAndShowBias(biasName, biasesContent) {
+  const biasElements = document.querySelectorAll("svg a");
+  let targetElement = null;
+  
+  // Find the bias element by name
+  biasElements.forEach((element) => {
+    const textElements = element.querySelectorAll("text");
+    for (const textElement of textElements) {
+      const currentBiasName = textElement.textContent.trim();
+      if (currentBiasName.toLowerCase() === biasName.toLowerCase()) {
+        targetElement = element;
+        break;
+      }
+    }
+  });
+
+  if (!targetElement) {
+    console.warn(`Bias "${biasName}" not found`);
+    return;
+  }
+
+  // Get the bounding box of the bias element
+  const bbox = targetElement.getBBox();
+  
+  // Calculate center position
+  const centerX = bbox.x + bbox.width / 2;
+  const centerY = bbox.y + bbox.height / 2;
+  
+  // Set viewBox to center on the bias with appropriate zoom
+  const svg = document.querySelector("#svg-container svg");
+  const zoomWidth = 400; // Adjust zoom level as needed
+  const zoomHeight = 300;
+  
+  const newViewBox = {
+    x: centerX - zoomWidth / 2,
+    y: centerY - zoomHeight / 2,
+    width: zoomWidth,
+    height: zoomHeight
+  };
+  
+  svg.setAttribute("viewBox", `${newViewBox.x} ${newViewBox.y} ${newViewBox.width} ${newViewBox.height}`);
+  currentZoomState = { ...newViewBox };
+  
+  // Show tooltip for the bias
+  setTimeout(() => {
+    const event = new MouseEvent('mouseenter', {
+      view: window,
+      bubbles: true,
+      cancelable: true
+    });
+    targetElement.dispatchEvent(event);
+  }, 100);
+}
+
+// Function to copy bias link to clipboard
+function copyBiasLink(biasName) {
+  const currentUrl = new URL(window.location.href);
+  currentUrl.searchParams.set('bias', biasName.toLowerCase().replace(/\s+/g, '-'));
+  
+  const shareUrl = currentUrl.toString();
+  
+  navigator.clipboard.writeText(shareUrl).then(() => {
+    // Show temporary feedback
+    const tooltip = document.querySelector('.custom-tooltip');
+    if (tooltip) {
+      const originalContent = tooltip.innerHTML;
+      tooltip.innerHTML = `
+        <div class="tooltip-arrow" data-popper-arrow></div>
+        <div class="tooltip-content">
+          <p style="color: green; font-weight: bold;">Link copiato negli appunti!</p>
+        </div>
+      `;
+      
+      setTimeout(() => {
+        tooltip.innerHTML = originalContent;
+      }, 2000);
+    }
+  }).catch(err => {
+    console.error('Failed to copy link: ', err);
+    // Fallback for older browsers
+    const textArea = document.createElement('textarea');
+    textArea.value = shareUrl;
+    document.body.appendChild(textArea);
+    textArea.select();
+    document.execCommand('copy');
+    document.body.removeChild(textArea);
+  });
 }
