@@ -180,6 +180,50 @@ footer {
   font-weight: bold !important;
 }
 
+/* Aura highlight effect for shared links */
+.aura-highlight path,
+.aura-highlight circle {
+  stroke: #ff6b35 !important;
+  stroke-width: 4px !important;
+  filter: drop-shadow(0 0 8px rgba(255, 107, 53, 0.8));
+}
+
+.aura-highlight text {
+  fill: #ff6b35 !important;
+  font-weight: bold !important;
+  filter: drop-shadow(0 0 6px rgba(255, 107, 53, 0.6));
+}
+
+/* Pulsing animation for aura highlight */
+.pulse path,
+.pulse circle {
+  animation: pulse-aura 2s ease-in-out infinite;
+}
+
+.pulse text {
+  animation: pulse-text 2s ease-in-out infinite;
+}
+
+@keyframes pulse-aura {
+  0%, 100% {
+    stroke-width: 4px;
+    filter: drop-shadow(0 0 8px rgba(255, 107, 53, 0.8));
+  }
+  50% {
+    stroke-width: 6px;
+    filter: drop-shadow(0 0 12px rgba(255, 107, 53, 1));
+  }
+}
+
+@keyframes pulse-text {
+  0%, 100% {
+    filter: drop-shadow(0 0 6px rgba(255, 107, 53, 0.6));
+  }
+  50% {
+    filter: drop-shadow(0 0 10px rgba(255, 107, 53, 0.9));
+  }
+}
+
 /* Modal styles for mobile */
 .modal {
   display: flex;

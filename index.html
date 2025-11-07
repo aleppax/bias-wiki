@@ -812,7 +812,7 @@
         return `Un bias cognitivo che influenza il pensiero e il processo decisionale.`;
       }
 
-      // Function to center and show a specific bias
+      // Function to highlight a specific bias with aura effect
       function centerAndShowBias(biasName) {
         const biasElements = document.querySelectorAll('svg a');
         let targetElement = null;
@@ -838,30 +838,13 @@
           return;
         }
 
-        // Get the bounding box of the bias element
-        const bbox = targetElement.getBBox();
+        // Add aura highlight effect
+        targetElement.classList.add('highlighted', 'aura-highlight');
         
-        // Calculate center position
-        const centerX = bbox.x + bbox.width / 2;
-        const centerY = bbox.y + bbox.height / 2;
-        
-        // Set viewBox to center on the bias with appropriate zoom
-        const svg = document.querySelector('#svg-container svg');
-        const zoomWidth = 400; // Adjust zoom level as needed
-        const zoomHeight = 300;
-        
-        const newViewBox = {
-          x: centerX - zoomWidth / 2,
-          y: centerY - zoomHeight / 2,
-          width: zoomWidth,
-          height: zoomHeight
-        };
-        
-        svg.setAttribute('viewBox', `${newViewBox.x} ${newViewBox.y} ${newViewBox.width} ${newViewBox.height}`);
-        currentZoomState = { ...newViewBox };
-        
-        // Explicitly add highlighted class to the bias element
-        targetElement.classList.add('highlighted');
+        // Create pulsing animation effect
+        setTimeout(() => {
+          targetElement.classList.add('pulse');
+        }, 100);
         
         // Show tooltip for the bias
         setTimeout(() => {
@@ -871,7 +854,24 @@
             cancelable: true
           });
           targetElement.dispatchEvent(event);
-        }, 100);
+        }, 500);
+        
+        // Remove aura effect after tooltip is closed
+        const tooltip = document.querySelector('.custom-tooltip');
+        if (tooltip) {
+          const observer = new MutationObserver((mutations) => {
+            mutations.forEach((mutation) => {
+              if (mutation.type === 'attributes' && mutation.attributeName === 'style') {
+                if (tooltip.style.display === 'none') {
+                  targetElement.classList.remove('aura-highlight', 'pulse');
+                  observer.disconnect();
+                }
+              }
+            });
+          });
+          
+          observer.observe(tooltip, { attributes: true });
+        }
       }
 
       // Function to copy bias link to clipboard
