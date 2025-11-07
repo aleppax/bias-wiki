@@ -189,55 +189,31 @@ function initializeTooltips(biasesContent) {
     const biasContent = biasData.content;
 
     if (mobile) {
-      // For mobile: Use modal with touch delay to prevent immediate Wikipedia redirection
+      // For mobile: Use two-tap behavior - first tap shows modal, second tap goes to Wikipedia
       const gElement = element.querySelector("g");
       
-      // Variables for touch handling
-      let touchStartTime = 0;
-      let touchStartPos = { x: 0, y: 0 };
-      let isDragging = false;
-      const TAP_THRESHOLD = 10; // pixels
-      const TAP_TIME_THRESHOLD = 300; // milliseconds
+      // Track tap state for each element
+      let lastTapTime = 0;
+      let tapCount = 0;
+      const DOUBLE_TAP_THRESHOLD = 500; // milliseconds
 
-      // Touch start handler
-      gElement.addEventListener("touchstart", function (event) {
-        touchStartTime = Date.now();
-        touchStartPos = {
-          x: event.touches[0].clientX,
-          y: event.touches[0].clientY
-        };
-        isDragging = false;
-      }, { passive: true });
-
-      // Touch move handler - detect if it's a drag
-      gElement.addEventListener("touchmove", function (event) {
-        if (!touchStartTime) return;
-        
-        const dx = event.touches[0].clientX - touchStartPos.x;
-        const dy = event.touches[0].clientY - touchStartPos.y;
-        const distance = Math.sqrt(dx * dx + dy * dy);
-        
-        if (distance > TAP_THRESHOLD) {
-          isDragging = true;
-        }
-      }, { passive: true });
-
-      // Touch end handler - show modal only for taps, not drags
+      // Touch handler for two-tap behavior
       gElement.addEventListener("touchend", function (event) {
-        if (!touchStartTime) return;
+        const currentTime = Date.now();
         
-        const touchDuration = Date.now() - touchStartTime;
-        
-        // Only show modal if it was a quick tap (not a drag) and within time threshold
-        if (!isDragging && touchDuration < TAP_TIME_THRESHOLD) {
-          event.preventDefault();
+        // Check if this is a double tap within the threshold
+        if (currentTime - lastTapTime < DOUBLE_TAP_THRESHOLD) {
+          // Second tap - go to Wikipedia
+          tapCount = 0;
+          window.open(wikipediaUrl, '_blank');
+        } else {
+          // First tap - show modal
+          tapCount = 1;
           showModal(biasName, biasContent, wikipediaUrl);
         }
         
-        // Reset state
-        touchStartTime = 0;
-        isDragging = false;
-      });
+        lastTapTime = currentTime;
+      }, { passive: true });
 
       // Prevent default click behavior on the link element
       element.addEventListener("click", function (event) {
@@ -388,6 +364,14 @@ function showModal(title, content, wikipediaUrl) {
 
   // Add modal to document
   document.body.appendChild(modal);
+
+  // Center the modal in the window
+  const modalContent = modal.querySelector(".modal-content");
+  modalContent.style.position = "fixed";
+  modalContent.style.top = "50%";
+  modalContent.style.left = "50%";
+  modalContent.style.transform = "translate(-50%, -50%)";
+  modalContent.style.margin = "0";
 
   // Show modal with a slight delay to allow for animation
   setTimeout(() => {
