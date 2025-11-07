@@ -192,28 +192,38 @@ function initializeTooltips(biasesContent) {
       // For mobile: Use two-tap behavior - first tap shows modal, second tap goes to Wikipedia
       const gElement = element.querySelector("g");
       
+      // Store the original href and remove it to prevent immediate navigation
+      const originalHref = element.getAttribute("xlink:href");
+      element.removeAttribute("xlink:href");
+      
       // Track tap state for each element
       let lastTapTime = 0;
-      let tapCount = 0;
-      const DOUBLE_TAP_THRESHOLD = 500; // milliseconds
+      let hasShownModal = false;
+      const SECOND_TAP_THRESHOLD = 1000; // 1 second minimum delay for second tap
 
-      // Touch handler for two-tap behavior
+      // Touch start handler - prevent default immediately
+      gElement.addEventListener("touchstart", function (event) {
+        event.preventDefault();
+      }, { passive: false });
+
+      // Touch end handler - handle two-tap behavior
       gElement.addEventListener("touchend", function (event) {
+        event.preventDefault();
         const currentTime = Date.now();
         
-        // Check if this is a double tap within the threshold
-        if (currentTime - lastTapTime < DOUBLE_TAP_THRESHOLD) {
+        // Check if this is the second tap after at least 1 second
+        if (hasShownModal && (currentTime - lastTapTime >= SECOND_TAP_THRESHOLD)) {
           // Second tap - go to Wikipedia
-          tapCount = 0;
-          window.open(wikipediaUrl, '_blank');
+          hasShownModal = false;
+          window.open(originalHref, '_blank');
         } else {
           // First tap - show modal
-          tapCount = 1;
-          showModal(biasName, biasContent, wikipediaUrl);
+          hasShownModal = true;
+          showModal(biasName, biasContent, originalHref);
         }
         
         lastTapTime = currentTime;
-      }, { passive: true });
+      }, { passive: false });
 
       // Prevent default click behavior on the link element
       element.addEventListener("click", function (event) {
