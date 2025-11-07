@@ -77,14 +77,6 @@
         </p>
         <p>Clicca o tocca sui singoli bias per saperne di più.</p>
         <div class="credits">
-          <p>
-            Codice Sorgente:
-            <a href="https://github.com/kocijan/bias-wiki" target="_blank"
-              >Disponibile su GitHub</a
-            >
-          </p>
-          <p>Contributi e feedback sono benvenuti tramite GitHub</p>
-          <p>
             Il Codice dei Bias Cognitivi è concesso in licenza
             <a
               href="https://creativecommons.org/licenses/by-sa/4.0/"
@@ -110,6 +102,12 @@
               >Martin Josip Kocijan</a
             >
           </p>
+          <p>
+            Traduzione italiana di aleppax:
+            <a href="https://github.com/aleppax/bias-wiki" target="_blank"
+              >Disponibile su GitHub</a
+            >
+          </p>
         </div>
       </div>
     </div>
@@ -124,6 +122,7 @@
       };
       let initialPinchMidpoint = { x: 0, y: 0 };
       let lastPinchMidpoint = { x: 0, y: 0 };
+      
 
       document.addEventListener('DOMContentLoaded', function() {
         const infoButton = document.querySelector('.info-button');
@@ -564,8 +563,10 @@
 
           // Get bias content from Italian data or use fallback
           const getBiasContent = () => {
-            if (italianBiasData && italianBiasData[biasName.toLowerCase()]) {
-              const biasInfo = italianBiasData[biasName.toLowerCase()];
+            const lowerBiasName = biasName.toLowerCase();
+            
+            if (italianBiasData && italianBiasData[lowerBiasName]) {
+              const biasInfo = italianBiasData[lowerBiasName];
               return `
                 <div class="bias-content">
                   ${biasInfo.content}
@@ -575,13 +576,27 @@
                 </div>
               `;
             } else {
-              // Fallback to simple description
-              return `
-                <p>${getItalianBiasDescription(biasName)}</p>
-                <div class="wiki-link-container">
-                  <a href="${wikipediaUrl}" target="_blank" class="wiki-link">Leggi di più su Wikipedia</a>
-                </div>
-              `;
+              // Try fuzzy matching
+              const matchedBias = findMatchingBias(biasName, italianBiasData);
+              if (matchedBias) {
+                const biasInfo = italianBiasData[matchedBias];
+                return `
+                  <div class="bias-content">
+                    ${biasInfo.content}
+                    <div class="wiki-link-container">
+                      <a href="${biasInfo.wikipediaLink}" target="_blank" class="wiki-link">Leggi di più su Wikipedia</a>
+                    </div>
+                  </div>
+                `;
+              } else {
+                // Fallback to simple description
+                return `
+                  <p>${getItalianBiasDescription(biasName)}</p>
+                  <div class="wiki-link-container">
+                    <a href="${wikipediaUrl}" target="_blank" class="wiki-link">Leggi di più su Wikipedia</a>
+                  </div>
+                `;
+              }
             }
           };
 
@@ -677,6 +692,64 @@
             }
           }, 50);
         });
+        
+      }
+      
+
+      // Fuzzy matching function to find similar bias names
+      function findMatchingBias(biasName, biasData) {
+        if (!biasData) return null;
+        
+        const searchName = biasName.toLowerCase().trim();
+        const biasKeys = Object.keys(biasData);
+        
+        // Common name variations and mappings
+        const nameMappings = {
+          'bias di autorità': 'bias dell\'autorità',
+          'effetto barnum': 'effetto forer',
+          'fenomeno baader-meinhof': 'illusione di frequenza',
+          'pregiudizio dell\'esperimentatore': 'bias dello sperimentatore',
+          'effetto osservatore': 'effetto dell\'osservatore',
+          'pregiudizio di aspettativa': 'bias dell\'aspettativa',
+          'effetto struzzo': 'effetto dello struzzo'
+        };
+        
+        // Check direct mapping first
+        if (nameMappings[searchName]) {
+          const mappedName = nameMappings[searchName];
+          if (biasData[mappedName]) return mappedName;
+        }
+        
+        // Try exact match with variations
+        for (const key of biasKeys) {
+          if (key === searchName) return key;
+        }
+        
+        // Try partial matches (contains)
+        for (const key of biasKeys) {
+          if (searchName.includes(key) || key.includes(searchName)) {
+            return key;
+          }
+        }
+        
+        // Try removing common prefixes/suffixes
+        const cleanName = searchName
+          .replace(/^(bias|effetto|fallacia|illusione|pregiudizio)\s+/i, '')
+          .replace(/\s+(bias|effetto|fallacia|illusione|pregiudizio)$/i, '')
+          .trim();
+          
+        for (const key of biasKeys) {
+          const cleanKey = key
+            .replace(/^(bias|effetto|fallacia|illusione|pregiudizio)\s+/i, '')
+            .replace(/\s+(bias|effetto|fallacia|illusione|pregiudizio)$/i, '')
+            .trim();
+            
+          if (cleanName === cleanKey || cleanName.includes(cleanKey) || cleanKey.includes(cleanName)) {
+            return key;
+          }
+        }
+        
+        return null;
       }
 
       // Helper function to get Italian descriptions for biases (fallback)
