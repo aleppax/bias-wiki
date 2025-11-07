@@ -126,11 +126,8 @@ function initializeTooltips(biasesContent) {
   // Check if we're on mobile or desktop
   const mobile = isMobileDevice();
 
-  // Exit tooltip initialization for non-English languages on desktop
-  // But allow mobile modal initialization for all languages
-  if (!mobile && document.documentElement.lang !== "en") {
-    return;
-  }
+  // Allow tooltip initialization for all languages on both desktop and mobile
+  // This ensures English Wikipedia buttons appear in tooltips for all languages
 
   // Get all bias elements
   const biasElements = document.querySelectorAll("svg a");
