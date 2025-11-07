@@ -146,8 +146,6 @@ function initializeTooltips(biasesContent) {
   function deactivateAllHrefs(exceptElement = null) {
     biasElements.forEach((el) => {
       if (el !== exceptElement && el.hasAttribute("xlink:href")) {
-        const href = el.getAttribute("xlink:href");
-        el.setAttribute("data-original-href", href);
         el.removeAttribute("xlink:href");
       }
     });
@@ -158,7 +156,6 @@ function initializeTooltips(biasesContent) {
     if (element.hasAttribute("data-original-href")) {
       const href = element.getAttribute("data-original-href");
       element.setAttribute("xlink:href", href);
-      element.removeAttribute("data-original-href");
     }
   }
 
@@ -212,7 +209,7 @@ function initializeTooltips(biasesContent) {
 
     if (!biasName) return;
 
-    const wikipediaUrl = element.getAttribute("xlink:href");
+    const wikipediaUrl = element.getAttribute("data-original-href") || element.getAttribute("xlink:href");
     const biasData = findBiasContent(biasesContent, biasName);
     const biasContent = biasData.content;
 
