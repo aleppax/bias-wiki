@@ -208,7 +208,17 @@ function initializeTooltips(biasesContent) {
 
     if (!biasName) return;
 
-    const wikipediaUrl = element.getAttribute("data-original-href");
+    let wikipediaUrl = element.getAttribute("data-original-href");
+    
+    // Convert Italian Wikipedia links to English Wikipedia
+    if (wikipediaUrl && wikipediaUrl.includes('it.wikipedia.org')) {
+      // Extract the article name from the Italian URL
+      const articleMatch = wikipediaUrl.match(/\/wiki\/(.+)$/);
+      if (articleMatch) {
+        // Convert to English Wikipedia URL
+        wikipediaUrl = `https://en.wikipedia.org/wiki/${articleMatch[1]}`;
+      }
+    }
     const biasData = findBiasContent(biasesContent, biasName);
     const biasContent = biasData.content;
 
@@ -230,7 +240,7 @@ function initializeTooltips(biasesContent) {
         }
         
         // First tap - show modal and activate href for next tap
-        showModal(biasName, biasContent, element.getAttribute("data-original-href"));
+        showModal(biasName, biasData, element.getAttribute("data-original-href"));
         
         // Activate this element's href and deactivate all others
         deactivateAllHrefs();
@@ -248,7 +258,7 @@ function initializeTooltips(biasesContent) {
         }
         
         // First click - show modal and activate href for next click
-        showModal(biasName, biasContent, element.getAttribute("data-original-href"));
+        showModal(biasName, biasData, element.getAttribute("data-original-href"));
         
         // Activate this element's href and deactivate all others
         deactivateAllHrefs();
@@ -272,7 +282,10 @@ function initializeTooltips(biasesContent) {
             <div class="tooltip-content">
               <h3>${biasName}</h3>
               ${biasContent}
-              <a href="${wikipediaUrl}" target="_blank" class="wiki-link">English Wikipedia</a>
+              <div class="wiki-buttons">
+                <a href="${wikipediaUrl}" target="_blank" class="wiki-link">English Wikipedia</a>
+                ${biasData.wikipediaUrl ? `<a href="${biasData.wikipediaUrl}" target="_blank" class="wiki-link">Wikipedia Italiano</a>` : ''}
+              </div>
             </div>
           `;
 
@@ -377,7 +390,7 @@ function findBiasContent(biasesContent, biasName) {
 }
 
 // Function to show modal on mobile
-function showModal(title, content, wikipediaUrl) {
+function showModal(title, biasData, wikipediaUrl) {
   // Remove any existing modals first
   const existingModals = document.querySelectorAll(".modal");
   existingModals.forEach((modal) => {
@@ -391,9 +404,12 @@ function showModal(title, content, wikipediaUrl) {
   modal.innerHTML = `
       <div class="modal-content">
         <h2>${title}<span class="close-button">&times;</span></h2>
-        <div class="modal-body">${content}</div>
+        <div class="modal-body">${biasData.content}</div>
         <div class="modal-footer">
-          <a href="${wikipediaUrl}" target="_blank" class="wiki-button">English Wikipedia</a>
+          <div class="wiki-buttons">
+            <a href="${wikipediaUrl}" target="_blank" class="wiki-button">English Wikipedia</a>
+            ${biasData.wikipediaUrl ? `<a href="${biasData.wikipediaUrl}" target="_blank" class="wiki-button">Wikipedia Italiano</a>` : ''}
+          </div>
         </div>
       </div>
     `;
@@ -978,7 +994,7 @@ function initializeInfoPanel() {
 
 // Function to load and parse biases content
 function loadBiasesContent() {
-  return fetch("biases_wikipedia.html")
+  return fetch("biases_wikipedia_it.html")
     .then((response) => {
       if (!response.ok) {
         throw new Error("Failed to load biases content");
@@ -997,6 +1013,7 @@ function loadBiasesContent() {
       biasElements.forEach((biasElement) => {
         const titleElement = biasElement.querySelector("h2");
         const contentElement = biasElement.querySelector(".content");
+        const wikipediaLink = biasElement.querySelector("a[href*='wikipedia']");
 
         if (titleElement && contentElement) {
           const biasName = titleElement.textContent.trim();
@@ -1004,6 +1021,7 @@ function loadBiasesContent() {
           biasesContent[biasName.toLowerCase().replace(/\s+/g, "-")] = {
             name: biasName,
             content: contentElement.innerHTML,
+            wikipediaUrl: wikipediaLink ? wikipediaLink.getAttribute("href") : null
           };
         }
       });

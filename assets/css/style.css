@@ -463,13 +463,24 @@ footer {
   font-weight: bold;
 }
 
+.wiki-buttons {
+  display: flex;
+  gap: 10px;
+  justify-content: center;
+  flex-wrap: wrap;
+  margin-top: 10px;
+}
+
 .wiki-link,
 .wiki-button {
   display: inline-block;
-  margin-top: 10px;
-  color: #0066cc;
+  padding: 8px 16px;
+  background-color: #0066cc;
+  color: white;
   text-decoration: none;
-  font-weight: bold;
+  border-radius: 4px;
+  font-weight: normal;
+  white-space: nowrap;
 }
 
 .wiki-link:hover,
@@ -521,8 +532,15 @@ footer {
 
 .modal-footer {
   padding: 15px 20px;
-  text-align: right;
+  text-align: center;
   border-top: 1px solid #ddd;
+}
+
+.wiki-buttons {
+  display: flex;
+  gap: 10px;
+  justify-content: center;
+  flex-wrap: wrap;
 }
 
 .wiki-button {
@@ -533,6 +551,7 @@ footer {
   text-decoration: none;
   border-radius: 4px;
   font-weight: normal;
+  white-space: nowrap;
 }
 
 .wiki-button:hover {

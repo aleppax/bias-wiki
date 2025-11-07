@@ -570,8 +570,9 @@
               return `
                 <div class="bias-content">
                   ${biasInfo.content}
-                  <div class="wiki-link-container">
-                    <a href="${biasInfo.wikipediaLink}" target="_blank" class="wiki-link">English Wikipedia</a>
+                  <div class="wiki-buttons">
+                    <a href="${wikipediaUrl}" target="_blank" class="wiki-link">English Wikipedia</a>
+                    <a href="${biasInfo.wikipediaLink}" target="_blank" class="wiki-link">Wikipedia Italiano</a>
                   </div>
                 </div>
               `;
@@ -583,8 +584,9 @@
                 return `
                   <div class="bias-content">
                     ${biasInfo.content}
-                    <div class="wiki-link-container">
-                      <a href="${biasInfo.wikipediaLink}" target="_blank" class="wiki-link">English Wikipedia</a>
+                    <div class="wiki-buttons">
+                      <a href="${wikipediaUrl}" target="_blank" class="wiki-link">English Wikipedia</a>
+                      <a href="${biasInfo.wikipediaLink}" target="_blank" class="wiki-link">Wikipedia Italiano</a>
                     </div>
                   </div>
                 `;
@@ -592,7 +594,7 @@
                 // Fallback to simple description
                 return `
                   <p>${getItalianBiasDescription(biasName)}</p>
-                  <div class="wiki-link-container">
+                  <div class="wiki-buttons">
                     <a href="${wikipediaUrl}" target="_blank" class="wiki-link">English Wikipedia</a>
                   </div>
                 `;
