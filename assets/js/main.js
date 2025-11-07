@@ -189,12 +189,57 @@ function initializeTooltips(biasesContent) {
     const biasContent = biasData.content;
 
     if (mobile) {
-      // For mobile: Use modal
+      // For mobile: Use modal with touch delay to prevent immediate Wikipedia redirection
       const gElement = element.querySelector("g");
-      gElement.addEventListener("click", function (event) {
-        event.preventDefault();
-        showModal(biasName, biasContent, wikipediaUrl);
+      
+      // Variables for touch handling
+      let touchStartTime = 0;
+      let touchStartPos = { x: 0, y: 0 };
+      let isDragging = false;
+      const TAP_THRESHOLD = 10; // pixels
+      const TAP_TIME_THRESHOLD = 300; // milliseconds
+
+      // Touch start handler
+      gElement.addEventListener("touchstart", function (event) {
+        touchStartTime = Date.now();
+        touchStartPos = {
+          x: event.touches[0].clientX,
+          y: event.touches[0].clientY
+        };
+        isDragging = false;
+      }, { passive: true });
+
+      // Touch move handler - detect if it's a drag
+      gElement.addEventListener("touchmove", function (event) {
+        if (!touchStartTime) return;
+        
+        const dx = event.touches[0].clientX - touchStartPos.x;
+        const dy = event.touches[0].clientY - touchStartPos.y;
+        const distance = Math.sqrt(dx * dx + dy * dy);
+        
+        if (distance > TAP_THRESHOLD) {
+          isDragging = true;
+        }
+      }, { passive: true });
+
+      // Touch end handler - show modal only for taps, not drags
+      gElement.addEventListener("touchend", function (event) {
+        if (!touchStartTime) return;
+        
+        const touchDuration = Date.now() - touchStartTime;
+        
+        // Only show modal if it was a quick tap (not a drag) and within time threshold
+        if (!isDragging && touchDuration < TAP_TIME_THRESHOLD) {
+          event.preventDefault();
+          showModal(biasName, biasContent, wikipediaUrl);
+        }
+        
+        // Reset state
+        touchStartTime = 0;
+        isDragging = false;
       });
+
+      // Prevent default click behavior on the link element
       element.addEventListener("click", function (event) {
         event.preventDefault();
       });
