@@ -1082,12 +1082,16 @@ function centerAndShowBias(biasName, biasesContent) {
   const biasElements = document.querySelectorAll("svg a");
   let targetElement = null;
   
+  // Convert URL parameter format to match SVG text format
+  // Replace hyphens with spaces and handle case sensitivity
+  const normalizedBiasName = biasName.toLowerCase().replace(/-/g, ' ');
+  
   // Find the bias element by name
   biasElements.forEach((element) => {
     const textElements = element.querySelectorAll("text");
     for (const textElement of textElements) {
-      const currentBiasName = textElement.textContent.trim();
-      if (currentBiasName.toLowerCase() === biasName.toLowerCase()) {
+      const currentBiasName = textElement.textContent.trim().toLowerCase();
+      if (currentBiasName === normalizedBiasName) {
         targetElement = element;
         break;
       }
@@ -1095,7 +1099,7 @@ function centerAndShowBias(biasName, biasesContent) {
   });
 
   if (!targetElement) {
-    console.warn(`Bias "${biasName}" not found`);
+    console.warn(`Bias "${biasName}" not found. Looking for: "${normalizedBiasName}"`);
     return;
   }
 
@@ -1120,6 +1124,9 @@ function centerAndShowBias(biasName, biasesContent) {
   
   svg.setAttribute("viewBox", `${newViewBox.x} ${newViewBox.y} ${newViewBox.width} ${newViewBox.height}`);
   currentZoomState = { ...newViewBox };
+  
+  // Explicitly add highlighted class to the bias element
+  targetElement.classList.add('highlighted');
   
   // Show tooltip for the bias
   setTimeout(() => {
