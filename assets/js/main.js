@@ -314,7 +314,7 @@ function initializeTooltips(biasesContent) {
         // Don't hide if tooltip is locked
         if (isTooltipLocked) return;
 
-        // Set a timeout to hide the tooltip
+        // Set a timeout to hide the tooltip with longer delay
         hideTimeoutId = setTimeout(() => {
           // Only hide if tooltip is not being hovered
           if (!tooltip.matches(":hover")) {
@@ -327,7 +327,7 @@ function initializeTooltips(biasesContent) {
               currentPopperInstance = null;
             }
           }
-        }, 50); // Short timeout to reduce chance of race conditions
+        }, 300); // Longer timeout (300ms) to allow moving to tooltip
       });
     }
   });
@@ -349,7 +349,7 @@ function initializeTooltips(biasesContent) {
     // Unlock the tooltip
     isTooltipLocked = false;
 
-    // Hide the tooltip after a short delay
+    // Hide the tooltip after a longer delay
     hideTimeoutId = setTimeout(() => {
       tooltip.style.display = "none";
 
@@ -362,7 +362,7 @@ function initializeTooltips(biasesContent) {
         currentPopperInstance.destroy();
         currentPopperInstance = null;
       }
-    }, 50);
+    }, 300); // Longer timeout (300ms) for smoother experience
   });
 }
 
