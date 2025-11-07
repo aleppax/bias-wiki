@@ -145,7 +145,9 @@ function initializeTooltips(biasesContent) {
   // Function to deactivate all hrefs except the specified one
   function deactivateAllHrefs(exceptElement = null) {
     biasElements.forEach((el) => {
-      if (el !== exceptElement && el.hasAttribute("xlink:href")) {
+      if (el !== exceptElement && el.hasAttribute("data-original-href")) {
+        el.setAttribute("xlink:href", el.getAttribute("data-original-href"));
+      } else if (el !== exceptElement) {
         el.removeAttribute("xlink:href");
       }
     });
@@ -209,7 +211,7 @@ function initializeTooltips(biasesContent) {
 
     if (!biasName) return;
 
-    const wikipediaUrl = element.getAttribute("data-original-href") || element.getAttribute("xlink:href");
+    const wikipediaUrl = element.getAttribute("data-original-href");
     const biasData = findBiasContent(biasesContent, biasName);
     const biasContent = biasData.content;
 
@@ -273,7 +275,7 @@ function initializeTooltips(biasesContent) {
             <div class="tooltip-content">
               <h3>${biasName}</h3>
               ${biasContent}
-              <a href="${wikipediaUrl}" target="_blank" class="wiki-link">Read more on Wikipedia</a>
+              <a href="${wikipediaUrl}" target="_blank" class="wiki-link">English Wikipedia</a>
             </div>
           `;
 
@@ -394,7 +396,7 @@ function showModal(title, content, wikipediaUrl) {
         <h2>${title}<span class="close-button">&times;</span></h2>
         <div class="modal-body">${content}</div>
         <div class="modal-footer">
-          <a href="${wikipediaUrl}" target="_blank" class="wiki-button">Read more on Wikipedia</a>
+          <a href="${wikipediaUrl}" target="_blank" class="wiki-button">English Wikipedia</a>
         </div>
       </div>
     `;
