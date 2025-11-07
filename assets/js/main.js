@@ -139,6 +139,34 @@ function initializeTooltips(biasesContent) {
     return;
   }
 
+  // Global state to track which element currently has active href
+  let currentActiveElement = null;
+
+  // Function to deactivate all hrefs except the specified one
+  function deactivateAllHrefs(exceptElement = null) {
+    biasElements.forEach((el) => {
+      if (el !== exceptElement && el.hasAttribute("xlink:href")) {
+        const href = el.getAttribute("xlink:href");
+        el.setAttribute("data-original-href", href);
+        el.removeAttribute("xlink:href");
+      }
+    });
+  }
+
+  // Function to activate href for a specific element
+  function activateHref(element) {
+    if (element.hasAttribute("data-original-href")) {
+      const href = element.getAttribute("data-original-href");
+      element.setAttribute("xlink:href", href);
+      element.removeAttribute("data-original-href");
+    }
+  }
+
+  // Initially deactivate all hrefs on mobile
+  if (mobile) {
+    deactivateAllHrefs();
+  }
+
   // Create tooltip element to be reused
   const tooltip = document.createElement("div");
   tooltip.className = "custom-tooltip";
@@ -192,42 +220,44 @@ function initializeTooltips(biasesContent) {
       // For mobile: Use two-tap behavior - first tap shows modal, second tap goes to Wikipedia
       const gElement = element.querySelector("g");
       
-      // Store the original href and remove it to prevent immediate navigation
-      const originalHref = element.getAttribute("xlink:href");
-      element.removeAttribute("xlink:href");
-      
-      // Track tap state for each element
-      let lastTapTime = 0;
-      let hasShownModal = false;
-      const SECOND_TAP_THRESHOLD = 1000; // 1 second minimum delay for second tap
-
-      // Touch start handler - prevent default immediately
+      // Touch handlers for mobile
       gElement.addEventListener("touchstart", function (event) {
         event.preventDefault();
       }, { passive: false });
 
-      // Touch end handler - handle two-tap behavior
       gElement.addEventListener("touchend", function (event) {
         event.preventDefault();
-        const currentTime = Date.now();
         
-        // Check if this is the second tap after at least 1 second
-        if (hasShownModal && (currentTime - lastTapTime >= SECOND_TAP_THRESHOLD)) {
-          // Second tap - go to Wikipedia
-          hasShownModal = false;
-          window.open(originalHref, '_blank');
-        } else {
-          // First tap - show modal
-          hasShownModal = true;
-          showModal(biasName, biasContent, originalHref);
+        // If this element already has an active href, it means it's the second tap - let it navigate naturally
+        if (element.hasAttribute("xlink:href")) {
+          return; // Let the natural link navigation happen
         }
         
-        lastTapTime = currentTime;
+        // First tap - show modal and activate href for next tap
+        showModal(biasName, biasContent, element.getAttribute("data-original-href"));
+        
+        // Activate this element's href and deactivate all others
+        deactivateAllHrefs();
+        activateHref(element);
+        currentActiveElement = element;
       }, { passive: false });
 
-      // Prevent default click behavior on the link element
-      element.addEventListener("click", function (event) {
+      // Click handler as fallback
+      gElement.addEventListener("click", function (event) {
         event.preventDefault();
+        
+        // If this element already has an active href, it means it's the second click - let it navigate naturally
+        if (element.hasAttribute("xlink:href")) {
+          return; // Let the natural link navigation happen
+        }
+        
+        // First click - show modal and activate href for next click
+        showModal(biasName, biasContent, element.getAttribute("data-original-href"));
+        
+        // Activate this element's href and deactivate all others
+        deactivateAllHrefs();
+        activateHref(element);
+        currentActiveElement = element;
       });
     } else {
       // For desktop: Use tooltip
